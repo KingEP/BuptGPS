@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TabHost xmlns:android="http://schemas.android.com/apk/res/android"
+         android:id="@android:id/tabhost"
+         android:layout_width="match_parent"
+         android:layout_height="match_parent"
+    >
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        >
+
+        <FrameLayout
+            android:id="@android:id/tabcontent"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_above="@+id/main_radiogroup"
+            />
+
+        <TabWidget
+            android:id="@android:id/tabs"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:visibility="gone"
+            />
+
+        <RadioGroup
+            android:id="@+id/main_radiogroup"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:orientation="horizontal"
+            android:paddingTop="8dp"
+            >
+
+            <RadioButton
+                android:id="@+id/tab_icon_map"
+                style="@style/tab_button_bg"
+                android:checked="true"
+                android:drawableTop="@drawable/map_icon_selector"
+                android:text="地图"
+                android:textColor="@drawable/text_color_selector"
+                />
+
+            <RadioButton
+                android:id="@+id/tab_icon_center"
+                style="@style/tab_button_bg"
+                android:drawableTop="@drawable/center_icon_selector"
+                android:text="个人中心"
+                android:textColor="@drawable/text_color_selector"
+                />
+
+        </RadioGroup>
+    </RelativeLayout>
+</TabHost>
