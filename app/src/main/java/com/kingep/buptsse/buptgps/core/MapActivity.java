@@ -108,7 +108,6 @@ public class MapActivity extends Activity implements SensorEventListener {
     mBaiduMap = mMapView.getMap();
     // 开启定位图层
     mBaiduMap.setMyLocationEnabled(true);
-    // 定位初始化
     LocationClientOption option = new LocationClientOption();
     option.setOpenGps(true); // 打开gps
     option.setCoorType("bd09ll"); // 设置坐标类型
