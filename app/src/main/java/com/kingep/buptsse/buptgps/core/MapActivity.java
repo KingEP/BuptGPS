@@ -5,10 +5,12 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.media.Image;
 import android.os.Bundle;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.RadioGroup.OnCheckedChangeListener;
 
 import com.baidu.location.BDLocation;
@@ -46,6 +48,7 @@ public class MapActivity extends Activity implements SensorEventListener {
   private double mCurrentLat = 0.0;
   private double mCurrentLon = 0.0;
   private float mCurrentAccracy;
+  private static int roadFlag = 0;
 
   MapView mMapView;
   BaiduMap mBaiduMap;
@@ -56,6 +59,7 @@ public class MapActivity extends Activity implements SensorEventListener {
   boolean isFirstLoc = true; // 是否首次定位
   private MyLocationData locData;
   private float direction;
+  private ImageButton road_btn;
 
   @Override
   public void onCreate(Bundle savedInstanceState) {
@@ -66,9 +70,7 @@ public class MapActivity extends Activity implements SensorEventListener {
     mLocClient.registerLocationListener(myListener);
 
     setContentView(R.layout.activity_map);
-    requestLocButton = (Button) findViewById(R.id.button1);
-    mSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);//获取传感器管理服务
-    mCurrentMode = LocationMode.NORMAL;
+    init();
     requestLocButton.setText("普通");
     OnClickListener btnClickListener = new OnClickListener() {
       public void onClick(View v) {
@@ -102,6 +104,32 @@ public class MapActivity extends Activity implements SensorEventListener {
         }
       }
     };
+
+    road_btn.setOnClickListener(new OnClickListener() {
+      @Override
+      public void onClick(View view) {
+        if (roadFlag % 2 == 0) {
+          roadFlag++;
+          view.post(new Runnable() {
+            @Override
+            public void run() {
+              road_btn.setImageResource(R.drawable.road_light);
+              mBaiduMap.setTrafficEnabled(true);
+            }
+          });
+        } else {
+          roadFlag++;
+          view.post(new Runnable() {
+            @Override
+            public void run() {
+              road_btn.setImageResource(R.drawable.road);
+              mBaiduMap.setTrafficEnabled(false);
+            }
+          });
+        }
+      }
+    });
+
     requestLocButton.setOnClickListener(btnClickListener);
     // 地图初始化
     mMapView = (MapView) findViewById(R.id.bmapView);
@@ -115,6 +143,13 @@ public class MapActivity extends Activity implements SensorEventListener {
     option.setScanSpan(1000);
     mLocClient.setLocOption(option);
     mLocClient.start();
+  }
+
+  public void init() {
+    road_btn = (ImageButton) findViewById(R.id.road_btn);
+    requestLocButton = (Button) findViewById(R.id.loc_btn);
+    mSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);//获取传感器管理服务
+    mCurrentMode = LocationMode.NORMAL;
   }
 
   @Override

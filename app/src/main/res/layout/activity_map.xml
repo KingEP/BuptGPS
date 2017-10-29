@@ -10,7 +10,7 @@
         android:clickable="true" />
 
     <Button
-        android:id="@+id/button1"
+        android:id="@+id/loc_btn"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentRight="true"
@@ -18,4 +18,14 @@
         android:layout_marginRight="25dp"
         android:layout_marginTop="10dip" />
 
+    <ImageButton
+        android:id="@+id/road_btn"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_below="@+id/loc_btn"
+        android:src="@drawable/road"
+        android:scaleType="centerCrop"
+        android:layout_alignRight="@+id/loc_btn"
+        android:layout_alignEnd="@+id/loc_btn"
+        android:layout_marginTop="20dp"/>
 </RelativeLayout>
