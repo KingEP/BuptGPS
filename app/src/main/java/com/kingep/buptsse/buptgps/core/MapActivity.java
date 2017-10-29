@@ -6,8 +6,12 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.widget.ArrayAdapter;
+import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.RadioGroup.OnCheckedChangeListener;
@@ -27,13 +31,25 @@ import com.baidu.mapapi.map.MyLocationConfiguration;
 import com.baidu.mapapi.map.MyLocationConfiguration.LocationMode;
 import com.baidu.mapapi.map.MyLocationData;
 import com.baidu.mapapi.model.LatLng;
+import com.baidu.mapapi.search.poi.OnGetPoiSearchResultListener;
+import com.baidu.mapapi.search.poi.PoiDetailResult;
+import com.baidu.mapapi.search.poi.PoiIndoorResult;
+import com.baidu.mapapi.search.poi.PoiResult;
+import com.baidu.mapapi.search.sug.OnGetSuggestionResultListener;
+import com.baidu.mapapi.search.sug.SuggestionResult;
+import com.baidu.mapapi.search.sug.SuggestionSearch;
+import com.baidu.mapapi.search.sug.SuggestionSearchOption;
 import com.kingep.buptsse.buptgps.R;
+
+import java.util.ArrayList;
+import java.util.List;
 
 
 /**
  * 此demo用来展示如何结合定位SDK实现定位，并使用MyLocationOverlay绘制定位位置 同时展示如何使用自定义图标绘制并点击时弹出泡泡
  */
-public class MapActivity extends Activity implements SensorEventListener {
+public class MapActivity extends Activity implements SensorEventListener,
+    OnGetPoiSearchResultListener, OnGetSuggestionResultListener {
 
   // 定位相关
   LocationClient mLocClient;
@@ -50,6 +66,9 @@ public class MapActivity extends Activity implements SensorEventListener {
   private float mCurrentAccracy;
   private static int roadFlag = 0;
 
+  private List<String> suggest;
+  private ArrayAdapter<String> sugAdapter = null;
+
   MapView mMapView;
   BaiduMap mBaiduMap;
 
@@ -59,7 +78,10 @@ public class MapActivity extends Activity implements SensorEventListener {
   boolean isFirstLoc = true; // 是否首次定位
   private MyLocationData locData;
   private float direction;
-  private ImageButton road_btn, navi_btn, fix_pos_btn;
+  private ImageButton road_btn, navi_btn, fix_pos_btn, search_btn;
+  private SuggestionSearch mSuggestionSearch = null;
+
+  private AutoCompleteTextView search_text = null;
 
   @Override
   public void onCreate(Bundle savedInstanceState) {
@@ -142,6 +164,29 @@ public class MapActivity extends Activity implements SensorEventListener {
       }
     });
 
+    search_text.addTextChangedListener(new TextWatcher() {
+      @Override
+      public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+      }
+
+      @Override
+      public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+        if(charSequence.length()<=0){
+          return;
+        }
+
+        mSuggestionSearch
+            .requestSuggestion(new SuggestionSearchOption()
+                .keyword(charSequence.toString()).city("北京"));
+      }
+
+      @Override
+      public void afterTextChanged(Editable editable) {
+
+      }
+    });
+
     navi_btn.setOnClickListener(btnClickListener);
     // 地图初始化
     mMapView = (MapView) findViewById(R.id.bmapView);
@@ -164,8 +209,21 @@ public class MapActivity extends Activity implements SensorEventListener {
     navi_btn.getBackground().setAlpha(150);
     fix_pos_btn = (ImageButton) findViewById(R.id.fix_pos_btn);
     fix_pos_btn.getBackground().setAlpha(150);
+    search_btn = (ImageButton) findViewById(R.id.search_btn);
+    search_btn.getBackground().setAlpha(150);
+    search_text = (AutoCompleteTextView) findViewById(R.id.search_text);
+    search_text.getBackground().setAlpha(150);
     mSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);//获取传感器管理服务
     mCurrentMode = LocationMode.NORMAL;
+    // 初始化建议搜索模块，注册建议搜索事件监听
+    mSuggestionSearch = SuggestionSearch.newInstance();
+    mSuggestionSearch.setOnGetSuggestionResultListener(this);
+
+
+    sugAdapter = new ArrayAdapter<String>(this,
+        android.R.layout.simple_dropdown_item_1line);
+    search_text.setAdapter(sugAdapter);
+    search_text.setThreshold(1);
   }
 
   @Override
@@ -187,6 +245,38 @@ public class MapActivity extends Activity implements SensorEventListener {
   @Override
   public void onAccuracyChanged(Sensor sensor, int i) {
 
+  }
+
+  @Override
+  public void onGetPoiResult(PoiResult poiResult) {
+
+  }
+
+  @Override
+  public void onGetPoiDetailResult(PoiDetailResult poiDetailResult) {
+
+  }
+
+  @Override
+  public void onGetPoiIndoorResult(PoiIndoorResult poiIndoorResult) {
+
+  }
+
+  @Override
+  public void onGetSuggestionResult(SuggestionResult suggestionResult) {
+
+    if (suggestionResult == null || suggestionResult.getAllSuggestions() == null) {
+      return;
+    }
+    suggest = new ArrayList<String>();
+    for (SuggestionResult.SuggestionInfo info : suggestionResult.getAllSuggestions()) {
+      if (info.key != null) {
+        suggest.add(info.key);
+      }
+    }
+    sugAdapter = new ArrayAdapter<String>(MapActivity.this, android.R.layout.simple_dropdown_item_1line, suggest);
+    search_text.setAdapter(sugAdapter);
+    sugAdapter.notifyDataSetChanged();
   }
 
   /**
@@ -253,8 +343,7 @@ public class MapActivity extends Activity implements SensorEventListener {
     mBaiduMap.setMyLocationEnabled(false);
     mMapView.onDestroy();
     mMapView = null;
+    mSuggestionSearch.destroy();
     super.onDestroy();
   }
-
-
 }

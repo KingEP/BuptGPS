@@ -9,16 +9,38 @@
         android:layout_height="match_parent"
         android:clickable="true"/>
 
+    <LinearLayout
+        android:id="@+id/search_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="5dp"
+        android:orientation="horizontal">
+
+        <AutoCompleteTextView
+            android:id="@+id/search_text"
+            android:layout_width="0dp"
+            android:layout_height="40dp"
+            android:layout_weight="1"
+            android:hint="在周边搜索......"
+            android:paddingLeft="10dp"
+            android:background="@color/colorWhite"/>
+
+        <ImageButton
+            android:id="@+id/search_btn"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:scaleType="centerCrop"
+            android:src="@drawable/search"/>
+    </LinearLayout>
 
     <ImageButton
         android:id="@+id/road_btn"
         android:layout_width="40dp"
         android:layout_height="40dp"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentTop="true"
-        android:layout_marginTop="20dp"
-        android:layout_marginRight="10dp"
+        android:layout_alignRight="@+id/search_layout"
+        android:layout_below="@+id/search_layout"
         android:alpha="150"
+        android:layout_marginTop="5dp"
         android:scaleType="centerCrop"
         android:src="@drawable/road"/>
 
