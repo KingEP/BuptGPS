@@ -5,7 +5,6 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
-import android.media.Image;
 import android.os.Bundle;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -21,6 +20,7 @@ import com.baidu.mapapi.SDKInitializer;
 import com.baidu.mapapi.map.BaiduMap;
 import com.baidu.mapapi.map.BitmapDescriptor;
 import com.baidu.mapapi.map.MapStatus;
+import com.baidu.mapapi.map.MapStatusUpdate;
 import com.baidu.mapapi.map.MapStatusUpdateFactory;
 import com.baidu.mapapi.map.MapView;
 import com.baidu.mapapi.map.MyLocationConfiguration;
@@ -59,7 +59,7 @@ public class MapActivity extends Activity implements SensorEventListener {
   boolean isFirstLoc = true; // 是否首次定位
   private MyLocationData locData;
   private float direction;
-  private ImageButton road_btn;
+  private ImageButton road_btn, navi_btn, fix_pos_btn;
 
   @Override
   public void onCreate(Bundle savedInstanceState) {
@@ -71,13 +71,17 @@ public class MapActivity extends Activity implements SensorEventListener {
 
     setContentView(R.layout.activity_map);
     init();
-    requestLocButton.setText("普通");
     OnClickListener btnClickListener = new OnClickListener() {
       public void onClick(View v) {
         switch (mCurrentMode) {
           case NORMAL:
-            requestLocButton.setText("跟随");
-            mCurrentMode = LocationMode.FOLLOWING;
+            v.post(new Runnable() {
+              @Override
+              public void run() {
+                navi_btn.setImageResource(R.drawable.navi_light);
+              }
+            });
+            mCurrentMode = LocationMode.COMPASS;
             mBaiduMap.setMyLocationConfiguration(new MyLocationConfiguration(
                 mCurrentMode, true, mCurrentMarker));
             MapStatus.Builder builder = new MapStatus.Builder();
@@ -85,19 +89,18 @@ public class MapActivity extends Activity implements SensorEventListener {
             mBaiduMap.animateMapStatus(MapStatusUpdateFactory.newMapStatus(builder.build()));
             break;
           case COMPASS:
-            requestLocButton.setText("普通");
+            v.post(new Runnable() {
+              @Override
+              public void run() {
+                navi_btn.setImageResource(R.drawable.navi);
+              }
+            });
             mCurrentMode = LocationMode.NORMAL;
             mBaiduMap.setMyLocationConfiguration(new MyLocationConfiguration(
                 mCurrentMode, true, mCurrentMarker));
             MapStatus.Builder builder1 = new MapStatus.Builder();
             builder1.overlook(0);
             mBaiduMap.animateMapStatus(MapStatusUpdateFactory.newMapStatus(builder1.build()));
-            break;
-          case FOLLOWING:
-            requestLocButton.setText("罗盘");
-            mCurrentMode = LocationMode.COMPASS;
-            mBaiduMap.setMyLocationConfiguration(new MyLocationConfiguration(
-                mCurrentMode, true, mCurrentMarker));
             break;
           default:
             break;
@@ -130,7 +133,16 @@ public class MapActivity extends Activity implements SensorEventListener {
       }
     });
 
-    requestLocButton.setOnClickListener(btnClickListener);
+    fix_pos_btn.setOnClickListener(new OnClickListener() {
+      @Override
+      public void onClick(View view) {
+        LatLng ll = new LatLng(mCurrentLat, mCurrentLon);
+        MapStatusUpdate u = MapStatusUpdateFactory.newLatLng(ll);
+        mBaiduMap.animateMapStatus(u);
+      }
+    });
+
+    navi_btn.setOnClickListener(btnClickListener);
     // 地图初始化
     mMapView = (MapView) findViewById(R.id.bmapView);
     mBaiduMap = mMapView.getMap();
@@ -147,7 +159,11 @@ public class MapActivity extends Activity implements SensorEventListener {
 
   public void init() {
     road_btn = (ImageButton) findViewById(R.id.road_btn);
-    requestLocButton = (Button) findViewById(R.id.loc_btn);
+    road_btn.getBackground().setAlpha(150);
+    navi_btn = (ImageButton) (findViewById(R.id.navi_btn));
+    navi_btn.getBackground().setAlpha(150);
+    fix_pos_btn = (ImageButton) findViewById(R.id.fix_pos_btn);
+    fix_pos_btn.getBackground().setAlpha(150);
     mSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);//获取传感器管理服务
     mCurrentMode = LocationMode.NORMAL;
   }

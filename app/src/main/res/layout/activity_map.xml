@@ -1,31 +1,45 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent" >
+                android:layout_height="match_parent">
 
     <com.baidu.mapapi.map.MapView
         android:id="@+id/bmapView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:clickable="true" />
+        android:clickable="true"/>
 
-    <Button
-        android:id="@+id/loc_btn"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentTop="true"
-        android:layout_marginRight="25dp"
-        android:layout_marginTop="10dip" />
 
     <ImageButton
         android:id="@+id/road_btn"
         android:layout_width="40dp"
         android:layout_height="40dp"
-        android:layout_below="@+id/loc_btn"
-        android:src="@drawable/road"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginTop="20dp"
+        android:layout_marginRight="10dp"
+        android:alpha="150"
         android:scaleType="centerCrop"
-        android:layout_alignRight="@+id/loc_btn"
-        android:layout_alignEnd="@+id/loc_btn"
-        android:layout_marginTop="20dp"/>
+        android:src="@drawable/road"/>
+
+    <ImageButton
+        android:id="@+id/navi_btn"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="30dp"
+        android:layout_marginLeft="10dp"
+        android:scaleType="centerCrop"
+        android:src="@drawable/navi"/>
+
+
+    <ImageButton
+        android:id="@+id/fix_pos_btn"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_above="@id/navi_btn"
+        android:layout_marginBottom="5dp"
+        android:layout_marginLeft="10dp"
+        android:scaleType="centerCrop"
+        android:src="@drawable/fix_position"/>
 </RelativeLayout>
