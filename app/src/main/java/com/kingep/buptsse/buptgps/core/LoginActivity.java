@@ -37,7 +37,8 @@ public class LoginActivity extends BaseActivity {
                 String username = mBinding.usernameText.getText().toString();
                 String password = mBinding.passwordText.getText().toString();
 
-           /*     if(TextUtils.isEmpty(username)){
+
+                if(TextUtils.isEmpty(username)){
                     mBinding.usernameText.setError("用户名不能为空！");
                     return;
                 }
@@ -45,7 +46,7 @@ public class LoginActivity extends BaseActivity {
                     mBinding.passwordText.setError("密码不能为空！");
                     return;
                 }
-                LoginManagerClient.login_get(username, password, new BaseOkHttpCallBack() {
+                LoginManagerClient.login_post(username, password, new BaseOkHttpCallBack() {
                     @Override
                     public void OnSuccess(String content, int result, String resultDescription) {
                         Toast.makeText(LoginActivity.this,"登录成功",Toast.LENGTH_SHORT).show();
@@ -63,7 +64,7 @@ public class LoginActivity extends BaseActivity {
                     public void OnFailure(Call call, IOException e) {
 
                     }
-                });*/
+                });
 
 
                 JumpToActivity(MainWindowActivity.class);
@@ -74,6 +75,7 @@ public class LoginActivity extends BaseActivity {
         mBinding.registerButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                JumpToActivity(RegisterActivity.class);
 
             }
         });
