@@ -46,25 +46,25 @@ public class LoginActivity extends BaseActivity {
                     mBinding.passwordText.setError("密码不能为空！");
                     return;
                 }
-                LoginManagerClient.login_post(username, password, new BaseOkHttpCallBack() {
-                    @Override
-                    public void OnSuccess(String content, int result, String resultDescription) {
-                        Toast.makeText(LoginActivity.this,"登录成功",Toast.LENGTH_SHORT).show();
-                        JumpToActivity(MainWindowActivity.class);
-                        LoginActivity.this.finish();
-                    }
-
-                    @Override
-                    public void OnError(String desc, int result) {
-                        Toast.makeText(LoginActivity.this,"登录失败，"+desc,Toast.LENGTH_SHORT).show();
-
-                    }
-
-                    @Override
-                    public void OnFailure(Call call, IOException e) {
-
-                    }
-                });
+//                LoginManagerClient.login_post(username, password, new BaseOkHttpCallBack() {
+//                    @Override
+//                    public void OnSuccess(String content, int result, String resultDescription) {
+//                        Toast.makeText(LoginActivity.this,"登录成功",Toast.LENGTH_SHORT).show();
+//                        JumpToActivity(MainWindowActivity.class);
+//                        LoginActivity.this.finish();
+//                    }
+//
+//                    @Override
+//                    public void OnError(String desc, int result) {
+//                        Toast.makeText(LoginActivity.this,"登录失败，"+desc,Toast.LENGTH_SHORT).show();
+//
+//                    }
+//
+//                    @Override
+//                    public void OnFailure(Call call, IOException e) {
+//
+//                    }
+//                });
 
 
                 JumpToActivity(MainWindowActivity.class);
