@@ -48,7 +48,7 @@
 
         <meta-data
             android:name="com.baidu.lbsapi.API_KEY"
-            android:value="yKZvzKsPPadmp4U5IQKZjgImPnCYLuy9" />
+            android:value="3Xu1WAHIl5iXFeI0GtxF1fL9FCCyDkQ4" />
 
         <service
             android:name="com.baidu.location.f"
