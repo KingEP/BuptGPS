@@ -34,7 +34,10 @@ import com.baidu.mapapi.model.LatLng;
 import com.baidu.mapapi.search.poi.OnGetPoiSearchResultListener;
 import com.baidu.mapapi.search.poi.PoiDetailResult;
 import com.baidu.mapapi.search.poi.PoiIndoorResult;
+import com.baidu.mapapi.search.poi.PoiNearbySearchOption;
 import com.baidu.mapapi.search.poi.PoiResult;
+import com.baidu.mapapi.search.poi.PoiSearch;
+import com.baidu.mapapi.search.poi.PoiSortType;
 import com.baidu.mapapi.search.sug.OnGetSuggestionResultListener;
 import com.baidu.mapapi.search.sug.SuggestionResult;
 import com.baidu.mapapi.search.sug.SuggestionSearch;
@@ -49,12 +52,13 @@ import java.util.List;
  * 此demo用来展示如何结合定位SDK实现定位，并使用MyLocationOverlay绘制定位位置 同时展示如何使用自定义图标绘制并点击时弹出泡泡
  */
 public class MapActivity extends Activity implements SensorEventListener,
-    OnGetPoiSearchResultListener, OnGetSuggestionResultListener {
+    OnGetPoiSearchResultListener, OnGetSuggestionResultListener, OnClickListener {
 
   // 定位相关
   LocationClient mLocClient;
   public MyLocationListenner myListener = new MyLocationListenner();
   private LocationMode mCurrentMode;
+  private PoiSearch mPoiSearch = null;
   BitmapDescriptor mCurrentMarker;
   private static final int accuracyCircleFillColor = 0xAAFFFF88;
   private static final int accuracyCircleStrokeColor = 0xAA00FF00;
@@ -65,6 +69,7 @@ public class MapActivity extends Activity implements SensorEventListener,
   private double mCurrentLon = 0.0;
   private float mCurrentAccracy;
   private static int roadFlag = 0;
+  private int radius = 100;
 
   private List<String> suggest;
   private ArrayAdapter<String> sugAdapter = null;
@@ -86,108 +91,50 @@ public class MapActivity extends Activity implements SensorEventListener,
   @Override
   public void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
-
     SDKInitializer.initialize(getApplicationContext());
     mLocClient = new LocationClient(this);
     mLocClient.registerLocationListener(myListener);
-
     setContentView(R.layout.activity_map);
     init();
-    OnClickListener btnClickListener = new OnClickListener() {
-      public void onClick(View v) {
-        switch (mCurrentMode) {
-          case NORMAL:
-            v.post(new Runnable() {
-              @Override
-              public void run() {
-                navi_btn.setImageResource(R.drawable.navi_light);
-              }
-            });
-            mCurrentMode = LocationMode.COMPASS;
-            mBaiduMap.setMyLocationConfiguration(new MyLocationConfiguration(
-                mCurrentMode, true, mCurrentMarker));
-            MapStatus.Builder builder = new MapStatus.Builder();
-            builder.overlook(0);
-            mBaiduMap.animateMapStatus(MapStatusUpdateFactory.newMapStatus(builder.build()));
-            break;
-          case COMPASS:
-            v.post(new Runnable() {
-              @Override
-              public void run() {
-                navi_btn.setImageResource(R.drawable.navi);
-              }
-            });
-            mCurrentMode = LocationMode.NORMAL;
-            mBaiduMap.setMyLocationConfiguration(new MyLocationConfiguration(
-                mCurrentMode, true, mCurrentMarker));
-            MapStatus.Builder builder1 = new MapStatus.Builder();
-            builder1.overlook(0);
-            mBaiduMap.animateMapStatus(MapStatusUpdateFactory.newMapStatus(builder1.build()));
-            break;
-          default:
-            break;
-        }
-      }
-    };
+    initMap();
+  }
 
-    road_btn.setOnClickListener(new OnClickListener() {
-      @Override
-      public void onClick(View view) {
-        if (roadFlag % 2 == 0) {
-          roadFlag++;
-          view.post(new Runnable() {
-            @Override
-            public void run() {
-              road_btn.setImageResource(R.drawable.road_light);
-              mBaiduMap.setTrafficEnabled(true);
-            }
-          });
-        } else {
-          roadFlag++;
-          view.post(new Runnable() {
-            @Override
-            public void run() {
-              road_btn.setImageResource(R.drawable.road);
-              mBaiduMap.setTrafficEnabled(false);
-            }
-          });
-        }
-      }
-    });
+  private void init() {
+    road_btn = (ImageButton) findViewById(R.id.road_btn);
+    navi_btn = (ImageButton) (findViewById(R.id.navi_btn));
+    fix_pos_btn = (ImageButton) findViewById(R.id.fix_pos_btn);
+    search_btn = (ImageButton) findViewById(R.id.search_btn);
+    search_text = (AutoCompleteTextView) findViewById(R.id.search_text);
 
-    fix_pos_btn.setOnClickListener(new OnClickListener() {
-      @Override
-      public void onClick(View view) {
-        LatLng ll = new LatLng(mCurrentLat, mCurrentLon);
-        MapStatusUpdate u = MapStatusUpdateFactory.newLatLng(ll);
-        mBaiduMap.animateMapStatus(u);
-      }
-    });
+    road_btn.getBackground().setAlpha(150);
+    navi_btn.getBackground().setAlpha(150);
+    fix_pos_btn.getBackground().setAlpha(150);
+    search_btn.getBackground().setAlpha(150);
+    search_text.getBackground().setAlpha(150);
 
-    search_text.addTextChangedListener(new TextWatcher() {
-      @Override
-      public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+    road_btn.setOnClickListener(this);
+    navi_btn.setOnClickListener(this);
+    fix_pos_btn.setOnClickListener(this);
+    search_btn.setOnClickListener(this);
 
-      }
+    mSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);//获取传感器管理服务
+    mCurrentMode = LocationMode.NORMAL;
+    // 初始化建议搜索模块，注册建议搜索事件监听
+    mSuggestionSearch = SuggestionSearch.newInstance();
+    mSuggestionSearch.setOnGetSuggestionResultListener(this);
 
-      @Override
-      public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-        if (charSequence.length() <= 0) {
-          return;
-        }
+    mPoiSearch = PoiSearch.newInstance();
+    mPoiSearch.setOnGetPoiSearchResultListener(this);
 
-        mSuggestionSearch
-            .requestSuggestion(new SuggestionSearchOption()
-                .keyword(charSequence.toString()).city("北京"));
-      }
 
-      @Override
-      public void afterTextChanged(Editable editable) {
+    sugAdapter = new ArrayAdapter<String>(this,
+        android.R.layout.simple_dropdown_item_1line);
+    search_text.setAdapter(sugAdapter);
+    search_text.setThreshold(1);
+    search_text.addTextChangedListener(getTextWatcher());
+  }
 
-      }
-    });
-
-    navi_btn.setOnClickListener(btnClickListener);
+  private void initMap(){
     // 地图初始化
     mMapView = (MapView) findViewById(R.id.bmapView);
     mBaiduMap = mMapView.getMap();
@@ -200,30 +147,6 @@ public class MapActivity extends Activity implements SensorEventListener,
     option.setScanSpan(1000);
     mLocClient.setLocOption(option);
     mLocClient.start();
-  }
-
-  public void init() {
-    road_btn = (ImageButton) findViewById(R.id.road_btn);
-    road_btn.getBackground().setAlpha(150);
-    navi_btn = (ImageButton) (findViewById(R.id.navi_btn));
-    navi_btn.getBackground().setAlpha(150);
-    fix_pos_btn = (ImageButton) findViewById(R.id.fix_pos_btn);
-    fix_pos_btn.getBackground().setAlpha(150);
-    search_btn = (ImageButton) findViewById(R.id.search_btn);
-    search_btn.getBackground().setAlpha(150);
-    search_text = (AutoCompleteTextView) findViewById(R.id.search_text);
-    search_text.getBackground().setAlpha(150);
-    mSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);//获取传感器管理服务
-    mCurrentMode = LocationMode.NORMAL;
-    // 初始化建议搜索模块，注册建议搜索事件监听
-    mSuggestionSearch = SuggestionSearch.newInstance();
-    mSuggestionSearch.setOnGetSuggestionResultListener(this);
-
-
-    sugAdapter = new ArrayAdapter<String>(this,
-        android.R.layout.simple_dropdown_item_1line);
-    search_text.setAdapter(sugAdapter);
-    search_text.setThreshold(1);
   }
 
   @Override
@@ -277,6 +200,57 @@ public class MapActivity extends Activity implements SensorEventListener,
     sugAdapter = new ArrayAdapter<String>(MapActivity.this, android.R.layout.simple_dropdown_item_1line, suggest);
     search_text.setAdapter(sugAdapter);
     sugAdapter.notifyDataSetChanged();
+  }
+
+  @Override
+  public void onClick(View view) {
+    switch (view.getId()) {
+      case R.id.navi_btn:
+        onNaviBtnClickMethod(view);
+        break;
+      case R.id.fix_pos_btn:
+        LatLng ll = new LatLng(mCurrentLat, mCurrentLon);
+        MapStatusUpdate u = MapStatusUpdateFactory.newLatLng(ll);
+        mBaiduMap.animateMapStatus(u);
+        break;
+      case R.id.road_btn:
+        onRoadBtnClickMethod(view);
+        break;
+      case R.id.search_btn:
+//        searchType = 2;
+//        PoiNearbySearchOption nearbySearchOption = new PoiNearbySearchOption().keyword(search_text.getText()
+//            .toString()).sortType(PoiSortType.distance_from_near_to_far).location(center)
+//            .radius(radius).pageNum(loadIndex);
+//        mPoiSearch.searchNearby(nearbySearchOption);
+      default:
+        break;
+    }
+  }
+
+  private TextWatcher getTextWatcher(){
+    TextWatcher textWatcher = new TextWatcher() {
+      @Override
+      public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+      }
+
+      @Override
+      public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+        if (charSequence.length() <= 0) {
+          return;
+        }
+
+        mSuggestionSearch
+            .requestSuggestion(new SuggestionSearchOption()
+                .keyword(charSequence.toString()).city("北京"));
+      }
+
+      @Override
+      public void afterTextChanged(Editable editable) {
+
+      }
+    };
+    return textWatcher;
   }
 
   /**
@@ -344,6 +318,65 @@ public class MapActivity extends Activity implements SensorEventListener,
     mMapView.onDestroy();
     mMapView = null;
     mSuggestionSearch.destroy();
+    mPoiSearch.destroy();
     super.onDestroy();
+  }
+
+  private void onNaviBtnClickMethod(View v) {
+
+    switch (mCurrentMode) {
+      case NORMAL:
+        v.post(new Runnable() {
+          @Override
+          public void run() {
+            navi_btn.setImageResource(R.drawable.navi_light);
+          }
+        });
+        mCurrentMode = LocationMode.COMPASS;
+        mBaiduMap.setMyLocationConfiguration(new MyLocationConfiguration(
+            mCurrentMode, true, mCurrentMarker));
+        MapStatus.Builder builder = new MapStatus.Builder();
+        builder.overlook(0);
+        mBaiduMap.animateMapStatus(MapStatusUpdateFactory.newMapStatus(builder.build()));
+        break;
+      case COMPASS:
+        v.post(new Runnable() {
+          @Override
+          public void run() {
+            navi_btn.setImageResource(R.drawable.navi);
+          }
+        });
+        mCurrentMode = LocationMode.NORMAL;
+        mBaiduMap.setMyLocationConfiguration(new MyLocationConfiguration(
+            mCurrentMode, true, mCurrentMarker));
+        MapStatus.Builder builder1 = new MapStatus.Builder();
+        builder1.overlook(0);
+        mBaiduMap.animateMapStatus(MapStatusUpdateFactory.newMapStatus(builder1.build()));
+        break;
+      default:
+        break;
+    }
+  }
+
+  private void onRoadBtnClickMethod(View view) {
+    if (roadFlag % 2 == 0) {
+      roadFlag++;
+      view.post(new Runnable() {
+        @Override
+        public void run() {
+          road_btn.setImageResource(R.drawable.road_light);
+          mBaiduMap.setTrafficEnabled(true);
+        }
+      });
+    } else {
+      roadFlag++;
+      view.post(new Runnable() {
+        @Override
+        public void run() {
+          road_btn.setImageResource(R.drawable.road);
+          mBaiduMap.setTrafficEnabled(false);
+        }
+      });
+    }
   }
 }
