@@ -1,5 +1,6 @@
 package com.kingep.buptsse.buptgps.core;
 
+import android.content.SharedPreferences;
 import android.databinding.DataBindingUtil;
 import android.support.annotation.IdRes;
 import android.text.TextUtils;
@@ -13,6 +14,7 @@ import com.kingep.buptsse.buptgps.R;
 import com.kingep.buptsse.buptgps.databinding.ActivityRegisterBinding;
 import com.kingep.buptsse.buptgps.http.BaseOkHttpCallBack;
 import com.kingep.buptsse.buptgps.http.RegisterManagerClient;
+import com.kingep.buptsse.buptgps.utils.ApplicationUtil;
 
 
 import java.io.IOException;
@@ -63,26 +65,41 @@ public class RegisterActivity extends BaseActivity {
                     mBinding.repasswordText.setError("请确认密码！");
                     return;
                 }
-                Toast.makeText(RegisterActivity.this,sex,Toast.LENGTH_SHORT).show();
-                RegisterManagerClient.register_post(username, password,repassword,sex,new BaseOkHttpCallBack() {
-                    @Override
-                    public void OnSuccess(String content, int result, String resultDescription) {
-                        Toast.makeText(RegisterActivity.this,"注册成功，请登录",Toast.LENGTH_SHORT).show();
-                        JumpToActivity(LoginActivity.class);
-                        RegisterActivity.this.finish();
-                    }
+                if(!mBinding.repasswordText.getText().equals(mBinding.passwordText.getText())){
+                    mBinding.repasswordText.setError("两次密码不一致！");
+                }
 
-                    @Override
-                    public void OnError(String desc, int result) {
-                        Toast.makeText(RegisterActivity.this,"注册失败，"+desc,Toast.LENGTH_SHORT).show();
-
-                    }
-
-                    @Override
-                    public void OnFailure(Call call, IOException e) {
-
-                    }
-                });
+                SharedPreferences sharedPreferences = ApplicationUtil.getApplication().getSharedPreferences("BuptGPS", MODE_PRIVATE);
+                SharedPreferences.Editor editor = getSharedPreferences("BuptGPS",MODE_PRIVATE).edit();
+                editor.putString("userName", mBinding.usernameText.getText().toString());
+                editor.putString("password", mBinding.passwordText.getText().toString());
+                editor.putString("gender", sex.equals("男")? "0":"1");
+                if(editor.commit()){
+                    Toast.makeText(RegisterActivity.this, "注册成功", Toast.LENGTH_SHORT);
+                    finish();
+                }else {
+                    Toast.makeText(RegisterActivity.this, "注册失败", Toast.LENGTH_SHORT);
+                }
+//                Toast.makeText(RegisterActivity.this,sex,Toast.LENGTH_SHORT).show();
+//                RegisterManagerClient.register_post(username, password,repassword,sex,new BaseOkHttpCallBack() {
+//                    @Override
+//                    public void OnSuccess(String content, int result, String resultDescription) {
+//                        Toast.makeText(RegisterActivity.this,"注册成功，请登录",Toast.LENGTH_SHORT).show();
+//                        JumpToActivity(LoginActivity.class);
+//                        RegisterActivity.this.finish();
+//                    }
+//
+//                    @Override
+//                    public void OnError(String desc, int result) {
+//                        Toast.makeText(RegisterActivity.this,"注册失败，"+desc,Toast.LENGTH_SHORT).show();
+//
+//                    }
+//
+//                    @Override
+//                    public void OnFailure(Call call, IOException e) {
+//
+//                    }
+//                });
 //
 //                JumpToActivity(LoginActivity.class);
 //                RegisterActivity.this.finish();

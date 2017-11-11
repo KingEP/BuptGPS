@@ -1,6 +1,7 @@
 package com.kingep.buptsse.buptgps.core;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
@@ -23,6 +24,7 @@ import com.kingep.buptsse.buptgps.R;
 import com.kingep.buptsse.buptgps.adapter.CommentAdapter;
 import com.kingep.buptsse.buptgps.adapter.RollViewAdapter;
 import com.kingep.buptsse.buptgps.bean.Comment;
+import com.kingep.buptsse.buptgps.utils.ApplicationUtil;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -45,7 +47,9 @@ public class PosDetailActivity extends AppCompatActivity implements View.OnClick
   private ShareUrlSearch mShareUrlSearch = null;
   private double mCurrentLat = 0.0;
   private double mCurrentLon = 0.0;
-  private String mAdress = "";
+  private String mAddress = "";
+  private String mUserName = "";
+  private String mGender = "";
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -59,9 +63,12 @@ public class PosDetailActivity extends AppCompatActivity implements View.OnClick
     posName = intent.getStringExtra("posName");
     mCurrentLat = intent.getDoubleExtra("lat", 0.0);
     mCurrentLon = intent.getDoubleExtra("lon", 0.0);
-    mAdress = intent.getStringExtra("address");
+    mAddress = intent.getStringExtra("address");
     mRollViewPager = (RollPagerView) findViewById(R.id.roll_view_pager);
 
+    SharedPreferences sharedPreferences = ApplicationUtil.getApplication().getSharedPreferences("BuptGPS", MODE_PRIVATE);
+    mUserName = sharedPreferences.getString("userName", "");
+    mGender = sharedPreferences.getString("gender", "0");
     //设置播放时间间隔
     mRollViewPager.setPlayDelay(2500);
     //设置透明度
@@ -153,8 +160,8 @@ public class PosDetailActivity extends AppCompatActivity implements View.OnClick
 
   private void createComment(String commentText) {
     Comment comment = new Comment();
-    comment.setUserName("KingEP");
-    comment.setGender("0");
+    comment.setUserName(mUserName);
+    comment.setGender(mGender);
     comment.setCommentTime(getFormatDate());
     comment.setCommentString(commentText);
     mCommentList.add(++num, comment);
@@ -178,7 +185,7 @@ public class PosDetailActivity extends AppCompatActivity implements View.OnClick
   public void onGetLocationShareUrlResult(ShareUrlResult shareUrlResult) {
     // 分享短串结果
     Intent it = new Intent(Intent.ACTION_SEND);
-    it.putExtra(Intent.EXTRA_TEXT, "您的朋友通过百度地图SDK与您分享一个位置: " + mAdress
+    it.putExtra(Intent.EXTRA_TEXT, "您的朋友通过百度地图SDK与您分享一个位置: " + mAddress
         + " -- " + shareUrlResult.getUrl());
     it.setType("text/plain");
     startActivity(Intent.createChooser(it, "将短串分享到"));
