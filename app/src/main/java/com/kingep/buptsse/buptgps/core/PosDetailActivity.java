@@ -90,7 +90,6 @@ public class PosDetailActivity extends AppCompatActivity implements View.OnClick
 
     commentEdit = (EditText) findViewById(R.id.comment_edit);
 
-
     mShareUrlSearch = ShareUrlSearch.newInstance();
     mShareUrlSearch.setOnGetShareUrlResultListener(this);
   }
