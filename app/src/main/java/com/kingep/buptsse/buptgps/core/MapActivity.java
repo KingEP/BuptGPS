@@ -458,6 +458,9 @@ public class MapActivity extends Activity implements SensorEventListener,
             public void onClick(View v) {
               Intent intent = new Intent(MapActivity.this, PosDetailActivity.class);
               intent.putExtra("posName", result.getName());
+              intent.putExtra("lat", mCurrentLat);
+              intent.putExtra("lon", mCurrentLon);
+              intent.putExtra("address", mResult.getAddress());
               startActivity(intent);
             }
           });
