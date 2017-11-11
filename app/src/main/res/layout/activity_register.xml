@@ -40,7 +40,7 @@
                         android:layout_height="100dp"
                         android:layout_gravity="center"
                         android:adjustViewBounds="true"
-                        android:background="@drawable/picture8"
+                        android:background="@drawable/male_avatar"
                         android:contentDescription="@null"
                         android:scaleType="centerCrop" />
 
