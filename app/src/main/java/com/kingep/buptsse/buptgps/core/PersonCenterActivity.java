@@ -32,7 +32,10 @@ public class PersonCenterActivity extends AppCompatActivity implements View.OnCl
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_person_center);
-    mSharedPreferences = ApplicationUtil.getApplication().getSharedPreferences("BuptGPS", MODE_PRIVATE);
+
+    SharedPreferences sharedPreferences1 = ApplicationUtil.getApplication().getSharedPreferences("User", MODE_PRIVATE);
+    String user = sharedPreferences1.getString("userName", "");
+    mSharedPreferences = ApplicationUtil.getApplication().getSharedPreferences("BuptGPS"+user, MODE_PRIVATE);
     init();
     genderGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
       @Override

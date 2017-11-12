@@ -81,9 +81,15 @@ public class RegisterActivity extends BaseActivity {
         }
         if (!mBinding.repasswordText.getText().toString().equals(mBinding.passwordText.getText().toString())) {
           mBinding.repasswordText.setError("两次密码不一致！");
+          return;
         }
 
-        SharedPreferences sharedPreferences = ApplicationUtil.getApplication().getSharedPreferences("BuptGPS", MODE_PRIVATE);
+        SharedPreferences sharedPreferences1 = ApplicationUtil.getApplication().getSharedPreferences("User", MODE_PRIVATE);
+        SharedPreferences.Editor editor1 = sharedPreferences1.edit();
+        editor1.putString("userName", mBinding.usernameText.getText().toString());
+        editor1.apply();
+
+        SharedPreferences sharedPreferences = ApplicationUtil.getApplication().getSharedPreferences("BuptGPS" + mBinding.usernameText.getText().toString(), MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putString("userName", mBinding.usernameText.getText().toString());
         editor.putString("password", mBinding.passwordText.getText().toString());

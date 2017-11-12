@@ -25,6 +25,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:background="@color/colorWhite"
+            android:focusedByDefault="false"
             android:layout_weight="1"/>
         <Button
             android:id="@+id/comment_btn"

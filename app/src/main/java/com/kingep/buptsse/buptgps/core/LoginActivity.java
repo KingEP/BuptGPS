@@ -68,10 +68,14 @@ public class LoginActivity extends BaseActivity {
 //                    }
 //                });
 
-                SharedPreferences sharedPreferences = ApplicationUtil.getApplication().getSharedPreferences("BuptGPS", MODE_PRIVATE);
+                SharedPreferences sharedPreferences = ApplicationUtil.getApplication().getSharedPreferences("BuptGPS" + username, MODE_PRIVATE);
                 String sharedUserName = sharedPreferences.getString("userName","");
                 String sharedPassWord = sharedPreferences.getString("password","");
                 if(sharedUserName.equals(username) && sharedPassWord.equals(password)){
+                    SharedPreferences sharedPreferences1 = ApplicationUtil.getApplication().getSharedPreferences("User", MODE_PRIVATE);
+                    SharedPreferences.Editor editor1 = sharedPreferences1.edit();
+                    editor1.putString("userName", mBinding.usernameText.getText().toString());
+                    editor1.apply();
                     Toast.makeText(LoginActivity.this, "登录成功", Toast.LENGTH_SHORT).show();
                     JumpToActivity(MainWindowActivity.class);
                     LoginActivity.this.finish();

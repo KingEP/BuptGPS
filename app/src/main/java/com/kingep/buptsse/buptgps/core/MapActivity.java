@@ -1,6 +1,7 @@
 package com.kingep.buptsse.buptgps.core;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.hardware.Sensor;
@@ -13,6 +14,7 @@ import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
@@ -231,6 +233,8 @@ public class MapActivity extends Activity implements SensorEventListener,
             .toString()).sortType(PoiSortType.distance_from_near_to_far).location(center)
             .radius(radius).pageNum(loadIndex);
         mPoiSearch.searchNearby(nearbySearchOption);
+        InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+        imm.hideSoftInputFromWindow(search_text.getWindowToken(), 0) ;
       default:
         break;
     }
@@ -458,8 +462,8 @@ public class MapActivity extends Activity implements SensorEventListener,
             public void onClick(View v) {
               Intent intent = new Intent(MapActivity.this, PosDetailActivity.class);
               intent.putExtra("posName", result.getName());
-              intent.putExtra("lat", mCurrentLat);
-              intent.putExtra("lon", mCurrentLon);
+              intent.putExtra("lat", result.getLocation().latitude);
+              intent.putExtra("lon", result.getLocation().longitude);
               intent.putExtra("address", mResult.getAddress());
               startActivity(intent);
             }

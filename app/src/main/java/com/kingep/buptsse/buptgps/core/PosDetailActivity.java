@@ -1,5 +1,7 @@
 package com.kingep.buptsse.buptgps.core;
 
+import android.app.Application;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -7,9 +9,11 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
+import android.util.Xml;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
@@ -31,20 +35,25 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
+import java.io.DataOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
-public class PosDetailActivity extends AppCompatActivity implements View.OnClickListener,OnGetShareUrlResultListener {
+public class PosDetailActivity extends AppCompatActivity implements View.OnClickListener, OnGetShareUrlResultListener {
   private String posName;
   private RollPagerView mRollViewPager;
   private List<Comment> mCommentList = new ArrayList<>();
-  private String jsonString = "[{\"comment\":\"很好\",\"gender\":\"1\",\"password\":\"1\",\"phoneNumber\":\"1\",\"posName\":\"1\",\"remark1\":\"1\",\"remark2\":\"1\",\"time\":\"2017-11-11 20:35:18\",\"userID\":\"1\",\"userName\":\"张希\"},{\"comment\":\"哈哈\",\"gender\":\"0\",\"password\":\"la\",\"phoneNumber\":\"la\",\"posName\":\"1\",\"remark1\":\"la\",\"remark2\":\"la\",\"time\":\"2017-11-11 21:30:23\",\"userID\":\"2\",\"userName\":\"王恩鹏\"}]";
-  private Button mButton  ;
+  private Button mButton;
   private EditText commentEdit;
   private CommentAdapter commentAdapter;
   private static int num;
@@ -54,6 +63,8 @@ public class PosDetailActivity extends AppCompatActivity implements View.OnClick
   private String mAddress = "";
   private String mUserName = "";
   private String mGender = "";
+  private JSONArray mJSONArray;
+  private String mString = "[{\"comment\":\"哈哈哈\",\"gender\":\"1\",\"time\":\"2017-11-12 11:22:20\",\"userName\":\"边茹月\"},{\"comment\":\"哈哈哈\",\"gender\":\"1\",\"time\":\"2017-11-12 11:24:20\",\"userName\":\"边茹月\"}]";
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -69,10 +80,15 @@ public class PosDetailActivity extends AppCompatActivity implements View.OnClick
     mCurrentLon = intent.getDoubleExtra("lon", 0.0);
     mAddress = intent.getStringExtra("address");
     mRollViewPager = (RollPagerView) findViewById(R.id.roll_view_pager);
-
-    SharedPreferences sharedPreferences = ApplicationUtil.getApplication().getSharedPreferences("BuptGPS", MODE_PRIVATE);
+    SharedPreferences sharedPreferences1 = ApplicationUtil.getApplication().getSharedPreferences("User", MODE_PRIVATE);
+    String user = sharedPreferences1.getString("userName", "");
+    SharedPreferences sharedPreferences = ApplicationUtil.getApplication().getSharedPreferences("BuptGPS" + user, MODE_PRIVATE);
     mUserName = sharedPreferences.getString("userName", "");
     mGender = sharedPreferences.getString("gender", "0");
+    File file = new File(getFilesDir().getPath()+"/"+posName+".json");
+    if(!file.exists()) {
+      writeFileData(posName + ".json", mString);
+    }
     //设置播放时间间隔
     mRollViewPager.setPlayDelay(2500);
     //设置透明度
@@ -106,7 +122,7 @@ public class PosDetailActivity extends AppCompatActivity implements View.OnClick
 
   @Override
   public boolean onOptionsItemSelected(MenuItem item) {
-    switch (item.getItemId()){
+    switch (item.getItemId()) {
 //      case R.id.route:
 //        Toast.makeText(PosDetailActivity.this, "显示路线", Toast.LENGTH_SHORT).show();
 //        Intent intent =new Intent(PosDetailActivity.this, RouteActivity.class);
@@ -125,21 +141,20 @@ public class PosDetailActivity extends AppCompatActivity implements View.OnClick
 
   public void initComment() {
     try {
-      InputStreamReader isr = new InputStreamReader(getAssets().open("comment1.json"),"UTF-8");
+      InputStreamReader isr = new InputStreamReader(getAssets().open("comment1.json"), "UTF-8");
       BufferedReader br = new BufferedReader(isr);
       String line;
       StringBuilder builder = new StringBuilder();
-      while((line = br.readLine()) != null){
+      while ((line = br.readLine()) != null) {
         builder.append(line);
       }
       br.close();
       isr.close();
-      String result = builder.toString();//builder读取了JSON中的数据。
-
+      String result = readFileData(posName+".json");//builder读取了JSON中的数据。
       JSONObject jsonObject;
-      JSONArray jsonArray = new JSONArray(result);
-      for (int i = 0; i < jsonArray.length(); i++) {
-        jsonObject = jsonArray.getJSONObject(i);
+      mJSONArray = new JSONArray(result);
+      for (int i = 0; i < mJSONArray.length(); i++) {
+        jsonObject = mJSONArray.getJSONObject(i);
         Comment comment = new Comment();
         comment.setUserName(jsonObject.getString("userName"));
         comment.setCommentTime(jsonObject.getString("time"));
@@ -161,7 +176,9 @@ public class PosDetailActivity extends AppCompatActivity implements View.OnClick
   public void onClick(View view) {
     switch (view.getId()) {
       case R.id.comment_btn:
-        if (!TextUtils.isEmpty(commentEdit.getText())){
+        InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+        imm.hideSoftInputFromWindow(commentEdit.getWindowToken(), 0) ;
+        if (!TextUtils.isEmpty(commentEdit.getText())) {
           createComment(commentEdit.getText().toString());
           view.post(new Runnable() {
             @Override
@@ -184,6 +201,18 @@ public class PosDetailActivity extends AppCompatActivity implements View.OnClick
     comment.setCommentString(commentText);
     mCommentList.add(++num, comment);
     commentAdapter.notifyDataSetChanged();
+    Map<String, String> map = new HashMap<>();
+    map.put("userName", mUserName);
+    map.put("gender", mGender);
+    map.put("time", getFormatDate());
+    map.put("comment", commentText);
+    JSONObject jsonObject = new JSONObject(map);
+    try {
+      mJSONArray.put(num, jsonObject);
+    } catch (JSONException e) {
+      e.printStackTrace();
+    }
+    writeFileData(posName+".json", mJSONArray.toString());
   }
 
   public String getFormatDate() {
@@ -207,10 +236,37 @@ public class PosDetailActivity extends AppCompatActivity implements View.OnClick
         + " -- " + shareUrlResult.getUrl());
     it.setType("text/plain");
     startActivity(Intent.createChooser(it, "将短串分享到"));
+    finish();
   }
 
   @Override
   public void onGetRouteShareUrlResult(ShareUrlResult shareUrlResult) {
 
+  }
+
+  public String readFileData(String fileName) {
+    String res = "";
+    try {
+      FileInputStream fin = openFileInput(fileName);
+      int length = fin.available();
+      byte[] buffer = new byte[length];
+      fin.read(buffer);
+      fin.close();
+      res = new String(buffer);
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+    return res;
+  }
+  public void writeFileData(String fileName,String message){
+    try{
+      FileOutputStream fout =openFileOutput(fileName, MODE_PRIVATE);
+      byte [] bytes = message.getBytes();
+      fout.write(bytes);
+      fout.close();
+    }
+    catch(Exception e){
+      e.printStackTrace();
+    }
   }
 }
