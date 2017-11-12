@@ -23,7 +23,7 @@ public class PersonCenterActivity extends AppCompatActivity implements View.OnCl
   private Button modifyBtn, quitBtn;
   private LinearLayout passLinear, rePassLinear;
   private RadioGroup genderGroup;
-  private RadioBgitutton boy,girl;
+  private RadioButton boy,girl;
   private static SharedPreferences mSharedPreferences;
   private ImageView headpic;
   private String sex = "男";
@@ -63,11 +63,6 @@ public class PersonCenterActivity extends AppCompatActivity implements View.OnCl
 
   public void init(){
     headpic = (ImageView) findViewById(R.id.imageview1);
-    if(mSharedPreferences.getString("gender","0").equals("0")){
-      headpic.setImageResource(R.drawable.male_avatar);
-    }else{
-      headpic.setImageResource(R.drawable.female_avatar);
-    }
     modifyUsername = (EditText) findViewById(R.id.modify_username);
     modifyUsername.setText(mSharedPreferences.getString("userName", ""));
     modifyPass = (EditText) findViewById(R.id.modify_password);
@@ -83,6 +78,16 @@ public class PersonCenterActivity extends AppCompatActivity implements View.OnCl
     quitBtn.setOnClickListener(this);
     boy = (RadioButton) findViewById(R.id.boy2);
     girl = (RadioButton) findViewById(R.id.girl2);
+
+    if(mSharedPreferences.getString("gender","0").equals("0")){
+      headpic.setImageResource(R.drawable.male_avatar);
+      boy.setChecked(true);
+      girl.setChecked(false);
+    }else{
+      boy.setChecked(false);
+      girl.setChecked(true);
+      headpic.setImageResource(R.drawable.female_avatar);
+    }
   }
   @Override
   public void onClick(View view) {
@@ -106,26 +111,26 @@ public class PersonCenterActivity extends AppCompatActivity implements View.OnCl
             }
           });
         }else{
-          if(modifyRePass.equals(modifyPass)){
+          if(modifyRePass.getText().toString().equals(modifyPass.getText().toString())){
             if(savePersonnalInfo()){
               Toast.makeText(PersonCenterActivity.this, "修改资料成功！", Toast.LENGTH_SHORT).show();
             }else {
               Toast.makeText(PersonCenterActivity.this, "修改资料失败！", Toast.LENGTH_SHORT).show();
             }
+            mHandler.post(new Runnable() {
+              @Override
+              public void run() {
+                modifyUsername.setEnabled(false);
+                boy.setEnabled(false);
+                girl.setEnabled(false);
+                passLinear.setVisibility(View.GONE);
+                rePassLinear.setVisibility(View.GONE);
+                modifyBtn.setText("修改资料");
+              }
+            });
           }else {
             modifyRePass.setError("两次密码不一致");
           }
-          mHandler.post(new Runnable() {
-            @Override
-            public void run() {
-              modifyUsername.setEnabled(false);
-              boy.setEnabled(false);
-              girl.setEnabled(false);
-              passLinear.setVisibility(View.GONE);
-              rePassLinear.setVisibility(View.GONE);
-              modifyBtn.setText("修改资料");
-            }
-          });
         }
     }
   }

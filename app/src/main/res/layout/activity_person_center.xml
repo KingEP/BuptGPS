@@ -32,7 +32,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_horizontal"
-                    android:layout_marginTop="22.0dip">
+                    android:layout_marginTop="15dp">
 
                     <ImageView
                         android:id="@+id/imageview1"
@@ -52,7 +52,6 @@
                     android:layout_height="wrap_content"
                     android:layout_marginLeft="20dp"
                     android:layout_marginRight="20dp"
-
                     android:layout_marginTop="10dp"
                     android:orientation="horizontal"
                     android:padding="5dp">
@@ -88,7 +87,7 @@
                     android:visibility="gone"
                     >
 
-                    <EditText
+                    <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:paddingRight="20dp"
@@ -121,7 +120,7 @@
                     android:visibility="gone"
                     >
 
-                    <EditText
+                    <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:paddingRight="20dp"
@@ -146,7 +145,7 @@
                     android:id="@+id/gendergroup2"
                     android:layout_width="fill_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginBottom="20dp"
+                    android:layout_marginBottom="10dp"
                     android:layout_marginTop="10dp"
                     android:orientation="horizontal">
 

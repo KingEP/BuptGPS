@@ -30,6 +30,10 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -38,11 +42,11 @@ import java.util.List;
 public class PosDetailActivity extends AppCompatActivity implements View.OnClickListener,OnGetShareUrlResultListener {
   private String posName;
   private RollPagerView mRollViewPager;
-  private static List<Comment> mCommentList = new ArrayList<>();
+  private List<Comment> mCommentList = new ArrayList<>();
   private String jsonString = "[{\"comment\":\"很好\",\"gender\":\"1\",\"password\":\"1\",\"phoneNumber\":\"1\",\"posName\":\"1\",\"remark1\":\"1\",\"remark2\":\"1\",\"time\":\"2017-11-11 20:35:18\",\"userID\":\"1\",\"userName\":\"张希\"},{\"comment\":\"哈哈\",\"gender\":\"0\",\"password\":\"la\",\"phoneNumber\":\"la\",\"posName\":\"1\",\"remark1\":\"la\",\"remark2\":\"la\",\"time\":\"2017-11-11 21:30:23\",\"userID\":\"2\",\"userName\":\"王恩鹏\"}]";
-  private Button mButton;
+  private Button mButton  ;
   private EditText commentEdit;
-  private static CommentAdapter commentAdapter;
+  private CommentAdapter commentAdapter;
   private static int num;
   private ShareUrlSearch mShareUrlSearch = null;
   private double mCurrentLat = 0.0;
@@ -121,8 +125,19 @@ public class PosDetailActivity extends AppCompatActivity implements View.OnClick
 
   public void initComment() {
     try {
+      InputStreamReader isr = new InputStreamReader(getAssets().open("comment1.json"),"UTF-8");
+      BufferedReader br = new BufferedReader(isr);
+      String line;
+      StringBuilder builder = new StringBuilder();
+      while((line = br.readLine()) != null){
+        builder.append(line);
+      }
+      br.close();
+      isr.close();
+      String result = builder.toString();//builder读取了JSON中的数据。
+
       JSONObject jsonObject;
-      JSONArray jsonArray = new JSONArray(jsonString);
+      JSONArray jsonArray = new JSONArray(result);
       for (int i = 0; i < jsonArray.length(); i++) {
         jsonObject = jsonArray.getJSONObject(i);
         Comment comment = new Comment();
@@ -134,6 +149,10 @@ public class PosDetailActivity extends AppCompatActivity implements View.OnClick
         num = i;
       }
     } catch (JSONException e) {
+      e.printStackTrace();
+    } catch (UnsupportedEncodingException e) {
+      e.printStackTrace();
+    } catch (IOException e) {
       e.printStackTrace();
     }
   }

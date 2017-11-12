@@ -72,11 +72,11 @@ public class LoginActivity extends BaseActivity {
                 String sharedUserName = sharedPreferences.getString("userName","");
                 String sharedPassWord = sharedPreferences.getString("password","");
                 if(sharedUserName.equals(username) && sharedPassWord.equals(password)){
-                    Toast.makeText(LoginActivity.this, "登录成功", Toast.LENGTH_SHORT);
+                    Toast.makeText(LoginActivity.this, "登录成功", Toast.LENGTH_SHORT).show();
                     JumpToActivity(MainWindowActivity.class);
                     LoginActivity.this.finish();
                 }else {
-                    Toast.makeText(LoginActivity.this, "用户名或密码错误", Toast.LENGTH_SHORT);
+                    Toast.makeText(LoginActivity.this, "用户名或密码错误", Toast.LENGTH_SHORT).show();
                 }
 
             }

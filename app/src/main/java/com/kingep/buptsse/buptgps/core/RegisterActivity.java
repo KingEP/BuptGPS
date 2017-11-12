@@ -79,7 +79,7 @@ public class RegisterActivity extends BaseActivity {
           mBinding.repasswordText.setError("请确认密码！");
           return;
         }
-        if (!mBinding.repasswordText.getText().equals(mBinding.passwordText.getText())) {
+        if (!mBinding.repasswordText.getText().toString().equals(mBinding.passwordText.getText().toString())) {
           mBinding.repasswordText.setError("两次密码不一致！");
         }
 
